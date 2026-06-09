@@ -1,0 +1,35 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler   #В данной задаче я бы использовал только HPA т.к VPA будет куда более проблемным решением
+metadata:                       # которое при совместном использовании еще надо будет подружить с горизонтальным скалированием 
+  name: http-app
+  namespace: ourcoolnamespace
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: http-app
+  minReplicas: 2 
+  maxReplicas: 4
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50 #При первых запросах и пиковой загрузке мы будем использовать все изначальные 4 пода
+                               #Ночью HPA будет снижать кол-во подов до 2(не ставим 1 для ситуации что приложение заработало
+                               #но запросов нет и при начале трафика ему резко поплохеет) ну или он просто умрет и упадет все приложение 
+
+  behavior:        #Чтобы стабилизировать переодичность создания и удаления подов добавляем время простоя до и после действий с подами 
+    scaleDown:
+      policies: 
+      - periodSeconds: 300            
+        type: Pods
+        value: 1
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      policies:
+      - periodSeconds: 300
+        type: Pods
+        value: 1
+      stabilizationWindowSeconds: 300
