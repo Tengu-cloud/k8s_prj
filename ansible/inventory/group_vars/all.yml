@@ -1,14 +1,7 @@
 ---
-# SSH/become (раскомментируйте при необходимости):
-# ansible_user: ubuntu
-# ansible_ssh_private_key_file: ~/.ssh/id_rsa
-#
-# Если sudo требует пароль:
-#   ansible-playbook playbooks/site.yml --ask-become-pass
-# ping без sudo:
-#   ansible -m ping k3s_cluster
+ansible_user: testuser
+ansible_ssh_private_key_file: ~/.ssh/id_ed25519_k8s
 
-# Статические IP и имена (должны совпадать с inventory)
 cp_ip: 192.168.200.10
 worker1_ip: 192.168.200.11
 worker2_ip: 192.168.200.12
@@ -17,7 +10,6 @@ cp_host: k8s-control-plane
 worker1_host: k8s-worker-1
 worker2_host: k8s-worker-2
 
-# Пустая строка = последняя стабильная версия с get.k3s.io
 k3s_version: ""
 
 k3s_disable_components:
