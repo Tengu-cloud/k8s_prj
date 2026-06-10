@@ -5,16 +5,16 @@ set -euo pipefail
 # Запускать на КАЖДОЙ VM с уникальным --role, --ip и --name.
 #
 # Пример (подставьте свои IP):
-#   CP:  ./cluster-network.sh --role cp --ip 192.168.1.10 --name k8s-control-plane
-#   W1:  ./cluster-network.sh --role wn --ip 192.168.1.11 --name k8s-worker-1
-#   W2:  ./cluster-network.sh --role wn --ip 192.168.1.12 --name k8s-worker-2
+#   CP:  ./cluster-network.sh --role cp --ip 192.168.200.10 --name k8s-control-plane
+#   W1:  ./cluster-network.sh --role wn --ip 192.168.200.11 --name k8s-worker-1
+#   W2:  ./cluster-network.sh --role wn --ip 192.168.200.12 --name k8s-worker-2
 
 ROLE=""
 SELF_IP=""
 NODE_NAME=""
-CP_IP="${CP_IP:-192.168.1.10}"
-WORKER1_IP="${WORKER1_IP:-192.168.1.11}"
-WORKER2_IP="${WORKER2_IP:-192.168.1.12}"
+CP_IP="${CP_IP:-192.168.200.10}"
+WORKER1_IP="${WORKER1_IP:-192.168.200.11}"
+WORKER2_IP="${WORKER2_IP:-192.168.200.12}"
 CP_HOST="k8s-control-plane"
 WORKER1_HOST="k8s-worker-1"
 WORKER2_HOST="k8s-worker-2"
@@ -41,9 +41,9 @@ Usage:
     [--cp-ip IP] [--worker1-ip IP] [--worker2-ip IP]
 
 Пример (3 VM):
-  CP: ./cluster-network.sh --role cp --ip 192.168.1.10 --name k8s-control-plane
-  W1: ./cluster-network.sh --role wn --ip 192.168.1.11 --name k8s-worker-1
-  W2: ./cluster-network.sh --role wn --ip 192.168.1.12 --name k8s-worker-2
+  CP: ./cluster-network.sh --role cp --ip 192.168.200.10 --name k8s-control-plane
+  W1: ./cluster-network.sh --role wn --ip 192.168.200.11 --name k8s-worker-1
+  W2: ./cluster-network.sh --role wn --ip 192.168.200.12 --name k8s-worker-2
 EOF
   exit 1
 fi

@@ -3,10 +3,10 @@ set -euo pipefail
 
 # Usage:
 #   Control plane:
-#     ./install-k3s.sh server --ip 192.168.1.10 --name k8s-control-plane
+#     ./install-k3s.sh server --ip 192.168.200.10 --name k8s-control-plane
 #   Worker:
-#     ./install-k3s.sh agent --url https://192.168.1.10:6443 --token TOKEN \
-#       --ip 192.168.1.11 --name k8s-worker-1
+#     ./install-k3s.sh agent --url https://192.168.200.10:6443 --token TOKEN \
+#       --ip 192.168.200.11 --name k8s-worker-1
 
 ROLE="${1:-}"
 shift || true

@@ -1,24 +1,28 @@
 ---
 - name: Prepare all cluster nodes
   hosts: k3s_cluster
+  become: true
   gather_facts: true
   roles:
     - common
 
 - name: Install k3s control plane
   hosts: server
+  become: true
   gather_facts: false
   roles:
     - k3s_server
 
 - name: Join worker nodes
   hosts: agent
+  become: true
   gather_facts: false
   roles:
     - k3s_agent
 
 - name: Verify cluster
   hosts: server
+  become: true
   gather_facts: false
   tasks:
     - name: Get nodes
