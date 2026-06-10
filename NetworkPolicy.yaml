@@ -9,6 +9,7 @@ spec:
       app: http-app
   policyTypes:
     - Ingress
+    - Egress
   ingress:
     - from:
         - namespaceSelector:
@@ -17,3 +18,22 @@ spec:
       ports:
         - protocol: TCP
           port: 8080
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+      ports:
+        - protocol: TCP
+          port: 15012
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    - to:
+        - podSelector: {}

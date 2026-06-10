@@ -9,7 +9,7 @@ spec:
     app: http-app
   sessionAffinity: None
   ports:
-    - name: http-app
+    - name: http
       protocol: TCP
       port: 80
       targetPort: 8080

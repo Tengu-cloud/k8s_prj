@@ -13,5 +13,14 @@ kubectl apply -f "$ROOT/PDB.yaml"
 kubectl apply -f "$ROOT/NetworkPolicy.yaml"
 kubectl apply -f "$ROOT/Ingress.yaml"
 
+if [ -d "$ROOT/mesh" ]; then
+  echo "==> Applying mesh policies"
+  kubectl apply -f "$ROOT/mesh/"
+fi
+
+echo "==> Restarting deployment to inject sidecar"
+kubectl rollout restart deployment/http-app -n ourcoolnamespace
+kubectl rollout status deployment/http-app -n ourcoolnamespace --timeout=300s
+
 echo "==> Status"
 kubectl -n ourcoolnamespace get pods,svc,ingress,hpa,pdb

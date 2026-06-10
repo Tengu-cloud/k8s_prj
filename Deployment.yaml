@@ -12,6 +12,10 @@ spec:
     metadata:
       labels:
         app: http-app
+        version: v1
+      annotations:
+        proxy.istio.io/config: |
+          holdApplicationUntilProxyStarts: true
     spec:
       affinity:
         podAntiAffinity:
