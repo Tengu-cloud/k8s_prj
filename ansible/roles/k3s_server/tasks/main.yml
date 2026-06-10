@@ -1,0 +1,56 @@
+---
+- name: Build k3s server install environment
+  ansible.builtin.set_fact:
+    k3s_server_install_env: >-
+      {{
+        {'INSTALL_K3S_VERSION': k3s_version}
+        if k3s_version | length > 0 else {}
+      }}
+
+- name: Build k3s server exec args
+  ansible.builtin.set_fact:
+    k3s_server_exec_args: "{{ (k3s_server_base_args + k3s_server_disable_args) | join(' ') }}"
+  vars:
+    k3s_server_base_args:
+      - --write-kubeconfig-mode 644
+      - --node-name {{ inventory_hostname }}
+      - --node-ip {{ node_ip }}
+      - --advertise-address {{ node_ip }}
+      - --tls-san {{ node_ip }}
+      - --tls-san {{ inventory_hostname }}
+    k3s_server_disable_args: "{{ k3s_disable_components | map('regex_replace', '^(.*)$', '--disable \\1') | list }}"
+
+- name: Download k3s install script
+  ansible.builtin.get_url:
+    url: "{{ k3s_install_script_url }}"
+    dest: "{{ k3s_install_script_path }}"
+    mode: "0755"
+
+- name: Install k3s server
+  ansible.builtin.shell: "{{ k3s_install_script_path }} server {{ k3s_server_exec_args }}"
+  environment: "{{ k3s_server_install_env }}"
+  args:
+    creates: /etc/rancher/k3s/k3s.yaml
+
+- name: Wait for k3s service
+  ansible.builtin.systemd:
+    name: k3s
+    state: started
+    enabled: true
+
+- name: Wait for Kubernetes API
+  ansible.builtin.command: k3s kubectl get nodes
+  register: k3s_api_check
+  until: k3s_api_check.rc == 0
+  retries: 12
+  delay: 10
+  changed_when: false
+
+- name: Read node token
+  ansible.builtin.slurp:
+    src: /var/lib/rancher/k3s/server/node-token
+  register: k3s_token_raw
+
+- name: Store node token for workers
+  ansible.builtin.set_fact:
+    k3s_node_token: "{{ k3s_token_raw.content | b64decode | trim }}"

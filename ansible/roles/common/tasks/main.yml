@@ -1,0 +1,55 @@
+---
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Configure /etc/hosts
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Disable swap immediately
+  ansible.builtin.command: swapoff -a
+  changed_when: false
+  failed_when: false
+
+- name: Disable swap in fstab
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s)'
+    replace: '# \1'
+
+- name: Check if UFW is installed
+  ansible.builtin.command: which ufw
+  register: ufw_check
+  changed_when: false
+  failed_when: false
+
+- name: Open firewall ports on control plane
+  ansible.builtin.shell: |
+    ufw allow 22/tcp
+    ufw allow 6443/tcp
+    ufw allow 10250/tcp
+    ufw allow 8472/udp
+    ufw allow 80,443/tcp
+    ufw --force enable
+  when:
+    - ufw_check.rc == 0
+    - inventory_hostname == cp_host
+  register: ufw_cp
+  changed_when: "'Skipping' in ufw_cp.stdout or 'Rule added' in ufw_cp.stdout or 'already enabled' in ufw_cp.stdout | lower"
+  failed_when: false
+
+- name: Enable UFW on workers
+  ansible.builtin.shell: |
+    ufw allow 22/tcp
+    ufw --force enable
+  when:
+    - ufw_check.rc == 0
+    - inventory_hostname != cp_host
+  register: ufw_worker
+  changed_when: "'Skipping' in ufw_worker.stdout or 'Rule added' in ufw_worker.stdout or 'already enabled' in ufw_worker.stdout | lower"
+  failed_when: false

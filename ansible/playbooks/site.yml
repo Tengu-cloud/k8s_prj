@@ -1,0 +1,31 @@
+---
+- name: Prepare all cluster nodes
+  hosts: k3s_cluster
+  gather_facts: true
+  roles:
+    - common
+
+- name: Install k3s control plane
+  hosts: server
+  gather_facts: false
+  roles:
+    - k3s_server
+
+- name: Join worker nodes
+  hosts: agent
+  gather_facts: false
+  roles:
+    - k3s_agent
+
+- name: Verify cluster
+  hosts: server
+  gather_facts: false
+  tasks:
+    - name: Get nodes
+      ansible.builtin.command: k3s kubectl get nodes -o wide
+      register: cluster_nodes
+      changed_when: false
+
+    - name: Show cluster status
+      ansible.builtin.debug:
+        msg: "{{ cluster_nodes.stdout_lines }}"

@@ -1,0 +1,20 @@
+---
+# Статические IP и имена (должны совпадать с inventory)
+cp_ip: 192.168.1.10
+worker1_ip: 192.168.1.11
+worker2_ip: 192.168.1.12
+
+cp_host: k8s-control-plane
+worker1_host: k8s-worker-1
+worker2_host: k8s-worker-2
+
+# Пустая строка = последняя стабильная версия с get.k3s.io
+k3s_version: ""
+
+k3s_disable_components:
+  - traefik
+
+k3s_server_url: "https://{{ cp_ip }}:6443"
+
+k3s_install_script_url: https://get.k3s.io
+k3s_install_script_path: /tmp/k3s-install.sh
