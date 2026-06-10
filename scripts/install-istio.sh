@@ -15,7 +15,7 @@ echo "==> Cleaning up istio-ingressgateway from a previous default install (if a
 kubectl delete deployment,service istio-ingressgateway -n istio-system --ignore-not-found
 
 echo "==> Installing Istio control plane (profile=${ISTIO_PROFILE})"
-istioctl install -y --wait-timeout 10m --set profile="${ISTIO_PROFILE}" \
+istioctl install -y --set profile="${ISTIO_PROFILE}" \
   --set values.global.proxy.resources.requests.cpu=50m \
   --set values.global.proxy.resources.requests.memory=64Mi \
   --set values.global.proxy.resources.limits.cpu=200m \

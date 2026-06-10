@@ -27,7 +27,6 @@ k3s_kubectl: k3s kubectl --kubeconfig {{ k3s_kubeconfig }}
 istio_version: "1.24.2"
 istio_profile: minimal
 istio_install_dir: "/opt/istio-{{ istio_version }}"
-istio_install_wait_timeout: 10m
 istio_proxy_cpu_request: 50m
 istio_proxy_memory_request: 64Mi
 istio_proxy_cpu_limit: 200m
