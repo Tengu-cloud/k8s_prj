@@ -44,8 +44,28 @@
       --set values.global.proxy.resources.requests.memory={{ istio_proxy_memory_request }}
       --set values.global.proxy.resources.limits.cpu={{ istio_proxy_cpu_limit }}
       --set values.global.proxy.resources.limits.memory={{ istio_proxy_memory_limit }}
+      --set values.pilot.nodeSelector.kubernetes\.io/hostname={{ cp_host }}
+      --set values.pilot.tolerations[0].key=node-role.kubernetes.io/control-plane
+      --set values.pilot.tolerations[0].operator=Exists
+      --set values.pilot.tolerations[0].effect=NoSchedule
   register: istio_install
   changed_when: "'installed' in istio_install.stdout | lower or 'configured' in istio_install.stdout | lower"
+
+- name: Pin istiod to control plane node
+  ansible.builtin.command:
+    cmd: >-
+      k3s kubectl --kubeconfig {{ k3s_kubeconfig }} patch deployment istiod -n istio-system
+      --type=merge
+      -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"{{ cp_host }}"},"tolerations":[{"key":"node-role.kubernetes.io/control-plane","operator":"Exists","effect":"NoSchedule"}]}}}}'
+  register: istiod_patch
+  changed_when: "'patched' in istiod_patch.stdout"
+
+- name: Wait for istiod rollout after node pin
+  ansible.builtin.command:
+    cmd: >-
+      k3s kubectl --kubeconfig {{ k3s_kubeconfig }} rollout status
+      deployment/istiod -n istio-system --timeout=180s
+  changed_when: false
 
 - name: Wait for istiod pods to be ready
   ansible.builtin.command:
