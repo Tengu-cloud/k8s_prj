@@ -1,7 +1,10 @@
 ---
 istio_version: "1.24.2"
-istio_profile: default
+# minimal = только istiod (sidecar injection); без istio-ingressgateway
+# default требует ingress gateway — не нужен при nginx Ingress
+istio_profile: minimal
 istio_install_dir: "/opt/istio-{{ istio_version }}"
+istio_install_wait_timeout: 10m
 istio_proxy_cpu_request: 50m
 istio_proxy_memory_request: 64Mi
 istio_proxy_cpu_limit: 200m

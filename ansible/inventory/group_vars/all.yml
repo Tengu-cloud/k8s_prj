@@ -23,10 +23,11 @@ k3s_install_script_path: /tmp/k3s-install.sh
 k3s_kubeconfig: /etc/rancher/k3s/k3s.yaml
 k3s_kubectl: k3s kubectl --kubeconfig {{ k3s_kubeconfig }}
 
-# Istio service mesh
+# Istio service mesh (minimal = только istiod; nginx Ingress остаётся входом)
 istio_version: "1.24.2"
-istio_profile: default
+istio_profile: minimal
 istio_install_dir: "/opt/istio-{{ istio_version }}"
+istio_install_wait_timeout: 10m
 istio_proxy_cpu_request: 50m
 istio_proxy_memory_request: 64Mi
 istio_proxy_cpu_limit: 200m

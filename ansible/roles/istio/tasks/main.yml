@@ -25,11 +25,21 @@
     creates: "{{ istio_install_dir }}/bin/istioctl"
   when: istio_istiod_pods.stdout | trim | length == 0
 
+- name: Remove istio-ingressgateway after failed default profile install
+  ansible.builtin.command:
+    cmd: >-
+      k3s kubectl --kubeconfig {{ k3s_kubeconfig }} delete deployment,service
+      istio-ingressgateway -n istio-system --ignore-not-found
+  when: istio_profile == 'minimal'
+  changed_when: false
+  failed_when: false
+
 - name: Install Istio control plane
   ansible.builtin.command:
     cmd: >-
       {{ istio_install_dir }}/bin/istioctl install -y
       --kubeconfig {{ k3s_kubeconfig }}
+      --wait-timeout {{ istio_install_wait_timeout }}
       --set profile={{ istio_profile }}
       --set values.global.proxy.resources.requests.cpu={{ istio_proxy_cpu_request }}
       --set values.global.proxy.resources.requests.memory={{ istio_proxy_memory_request }}
