@@ -1,0 +1,56 @@
+---
+- name: Map system architecture for Istio release
+  ansible.builtin.set_fact:
+    istio_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+
+- name: Check if istiod is running
+  ansible.builtin.command:
+    cmd: k3s kubectl --kubeconfig {{ k3s_kubeconfig }} get pods -n istio-system -l app=istiod --no-headers
+  register: istio_istiod_pods
+  changed_when: false
+  failed_when: false
+
+- name: Download Istio release archive
+  ansible.builtin.get_url:
+    url: "https://github.com/istio/istio/releases/download/{{ istio_version }}/istio-{{ istio_version }}-linux-{{ istio_arch }}.tar.gz"
+    dest: "/tmp/istio-{{ istio_version }}-linux-{{ istio_arch }}.tar.gz"
+    mode: "0644"
+  when: istio_istiod_pods.stdout | trim | length == 0
+
+- name: Extract Istio release
+  ansible.builtin.unarchive:
+    src: "/tmp/istio-{{ istio_version }}-linux-{{ istio_arch }}.tar.gz"
+    dest: /opt
+    remote_src: true
+    creates: "{{ istio_install_dir }}/bin/istioctl"
+  when: istio_istiod_pods.stdout | trim | length == 0
+
+- name: Install Istio control plane
+  ansible.builtin.command:
+    cmd: >-
+      {{ istio_install_dir }}/bin/istioctl install -y
+      --kubeconfig {{ k3s_kubeconfig }}
+      --set profile={{ istio_profile }}
+      --set values.global.proxy.resources.requests.cpu={{ istio_proxy_cpu_request }}
+      --set values.global.proxy.resources.requests.memory={{ istio_proxy_memory_request }}
+      --set values.global.proxy.resources.limits.cpu={{ istio_proxy_cpu_limit }}
+      --set values.global.proxy.resources.limits.memory={{ istio_proxy_memory_limit }}
+  register: istio_install
+  changed_when: "'installed' in istio_install.stdout | lower or 'configured' in istio_install.stdout | lower"
+
+- name: Wait for istiod pods to be ready
+  ansible.builtin.command:
+    cmd: >-
+      k3s kubectl --kubeconfig {{ k3s_kubeconfig }} wait
+      --for=condition=ready pod -l app=istiod -n istio-system --timeout=300s
+  changed_when: false
+
+- name: Show Istio control plane status
+  ansible.builtin.command:
+    cmd: k3s kubectl --kubeconfig {{ k3s_kubeconfig }} get pods -n istio-system
+  register: istio_pods_status
+  changed_when: false
+
+- name: Istio pods
+  ansible.builtin.debug:
+    msg: "{{ istio_pods_status.stdout_lines }}"

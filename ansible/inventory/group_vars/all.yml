@@ -19,3 +19,29 @@ k3s_server_url: "https://{{ cp_ip }}:6443"
 
 k3s_install_script_url: https://get.k3s.io
 k3s_install_script_path: /tmp/k3s-install.sh
+
+k3s_kubeconfig: /etc/rancher/k3s/k3s.yaml
+k3s_kubectl: k3s kubectl --kubeconfig {{ k3s_kubeconfig }}
+
+# Istio service mesh
+istio_version: "1.24.2"
+istio_profile: default
+istio_install_dir: "/opt/istio-{{ istio_version }}"
+istio_proxy_cpu_request: 50m
+istio_proxy_memory_request: 64Mi
+istio_proxy_cpu_limit: 200m
+istio_proxy_memory_limit: 256Mi
+
+# Application manifests (paths relative to project root)
+app_project_root: "{{ playbook_dir }}/../.."
+app_namespace: ourcoolnamespace
+app_manifests:
+  - Namespace.yaml
+  - ResourceQuota.yaml
+  - Deployment.yaml
+  - Service.yaml
+  - HPA.yaml
+  - PDB.yaml
+  - NetworkPolicy.yaml
+  - Ingress.yaml
+app_mesh_manifests_dir: mesh

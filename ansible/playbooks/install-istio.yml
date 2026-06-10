@@ -1,0 +1,9 @@
+---
+# Установка Istio control plane на k3s control plane.
+# Запуск: ansible-playbook playbooks/install-istio.yml
+- name: Install Istio service mesh
+  hosts: server
+  become: true
+  gather_facts: true
+  roles:
+    - istio

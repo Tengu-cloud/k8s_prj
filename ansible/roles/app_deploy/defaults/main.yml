@@ -1,0 +1,15 @@
+---
+app_project_root: "{{ playbook_dir }}/../.."
+app_namespace: ourcoolnamespace
+app_manifests:
+  - Namespace.yaml
+  - ResourceQuota.yaml
+  - Deployment.yaml
+  - Service.yaml
+  - HPA.yaml
+  - PDB.yaml
+  - NetworkPolicy.yaml
+  - Ingress.yaml
+app_mesh_manifests_dir: mesh
+k3s_kubeconfig: /etc/rancher/k3s/k3s.yaml
+app_staging_dir: /tmp/k8s_prj-manifests

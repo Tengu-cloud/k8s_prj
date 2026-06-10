@@ -1,0 +1,12 @@
+---
+# Деплой манифестов http-app и mesh-политик на кластер.
+# Запуск: ansible-playbook playbooks/deploy-app.yml
+# Требует: рабочий k3s-кластер; для sidecar — предварительно install-istio.yml
+- name: Deploy http-app manifests
+  hosts: server
+  become: true
+  gather_facts: false
+  vars:
+    app_project_root: "{{ playbook_dir }}/../.."
+  roles:
+    - app_deploy

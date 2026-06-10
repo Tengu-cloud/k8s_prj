@@ -1,0 +1,9 @@
+---
+istio_version: "1.24.2"
+istio_profile: default
+istio_install_dir: "/opt/istio-{{ istio_version }}"
+istio_proxy_cpu_request: 50m
+istio_proxy_memory_request: 64Mi
+istio_proxy_cpu_limit: 200m
+istio_proxy_memory_limit: 256Mi
+k3s_kubeconfig: /etc/rancher/k3s/k3s.yaml

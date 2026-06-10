@@ -1,0 +1,59 @@
+---
+- name: Ensure staging directory exists
+  ansible.builtin.file:
+    path: "{{ app_staging_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy application manifests to control plane
+  ansible.builtin.copy:
+    src: "{{ app_project_root }}/{{ item }}"
+    dest: "{{ app_staging_dir }}/{{ item }}"
+    mode: "0644"
+  loop: "{{ app_manifests }}"
+
+- name: Copy mesh manifests to control plane
+  ansible.builtin.copy:
+    src: "{{ app_project_root }}/{{ app_mesh_manifests_dir }}/"
+    dest: "{{ app_staging_dir }}/{{ app_mesh_manifests_dir }}/"
+    mode: "0644"
+
+- name: Apply application manifests
+  ansible.builtin.command:
+    cmd: k3s kubectl --kubeconfig {{ k3s_kubeconfig }} apply -f {{ app_staging_dir }}/{{ item }}
+  loop: "{{ app_manifests }}"
+  register: app_apply
+  changed_when: "'configured' in app_apply.stdout or 'created' in app_apply.stdout"
+
+- name: Apply mesh manifests
+  ansible.builtin.command:
+    cmd: k3s kubectl --kubeconfig {{ k3s_kubeconfig }} apply -f {{ app_staging_dir }}/{{ app_mesh_manifests_dir }}/
+  register: mesh_apply
+  changed_when: "'configured' in mesh_apply.stdout or 'created' in mesh_apply.stdout"
+
+- name: Restart deployment to inject sidecar
+  ansible.builtin.command:
+    cmd: >-
+      k3s kubectl --kubeconfig {{ k3s_kubeconfig }} rollout restart
+      deployment/http-app -n {{ app_namespace }}
+  register: rollout_restart
+  changed_when: "'restarted' in rollout_restart.stdout"
+
+- name: Wait for deployment rollout
+  ansible.builtin.command:
+    cmd: >-
+      k3s kubectl --kubeconfig {{ k3s_kubeconfig }} rollout status
+      deployment/http-app -n {{ app_namespace }} --timeout=300s
+  changed_when: false
+
+- name: Show application status
+  ansible.builtin.command:
+    cmd: >-
+      k3s kubectl --kubeconfig {{ k3s_kubeconfig }} get pods,svc,ingress,hpa,pdb
+      -n {{ app_namespace }}
+  register: app_status
+  changed_when: false
+
+- name: Application resources
+  ansible.builtin.debug:
+    msg: "{{ app_status.stdout_lines }}"
