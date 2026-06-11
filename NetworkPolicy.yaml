@@ -23,6 +23,14 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: istio-system
   egress:
+    # k3s Service CIDR — DNS (kube-dns ClusterIP) и сервисы вроде istiod
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.0/16
+    # Pod CIDR — east-west между подами
+    - to:
+        - ipBlock:
+            cidr: 10.42.0.0/16
     - to:
         - namespaceSelector:
             matchLabels:
@@ -31,13 +39,3 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: kube-system
-      ports:
-        - protocol: UDP
-          port: 53
-    - to:
-        - namespaceSelector: {}
-      ports:
-        - protocol: UDP
-          port: 53
-    - to:
-        - podSelector: {}
